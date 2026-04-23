@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Immunization ROI Calculator | Semcasting</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#c8102e;--red-dark:#a00c24;--red-light:#f5e6e9;
+  --bg:#f0f2f5;--white:#fff;
+  --n900:#12131a;--n700:#2f3240;--n500:#717585;--n300:#c4c7d0;--n100:#f5f6f8;
+  --sh:0 4px 20px rgba(0,0,0,.09);--sh2:0 1px 4px rgba(0,0,0,.06);
+  --r:10px;--r2:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--n900);min-height:100vh;font-size:15px}
+
+/* HEADER */
+header{background:var(--white);border-bottom:3px solid var(--red);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;position:sticky;top:0;z-index:200;box-shadow:var(--sh2)}
+.hd-left{display:flex;align-items:center;gap:12px}
+.hd-logo{display:flex;align-items:center;gap:8px}
+.hd-logo-icon{width:34px;height:34px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.hd-logo-icon svg{width:18px;height:18px;fill:#fff}
+.hd-logo-name{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--n900)}
+.hd-logo-name span{color:var(--red)}
+.hd-divider{width:1px;height:28px;background:var(--n300)}
+.hd-pow{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--n500)}
+.hd-pow strong{color:var(--n700)}
+.hd-badge{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);background:var(--red-light);border:1px solid #f0c0c8;border-radius:999px;padding:4px 12px}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0d0e14 0%,#1a0a10 55%,#2e0d1a 100%);padding:44px 40px 0;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(200,16,46,.2),transparent 68%);pointer-events:none}
+.hero-inner{max-width:680px;position:relative;z-index:1}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);background:rgba(200,16,46,.12);border:1px solid rgba(200,16,46,.28);border-radius:999px;padding:5px 13px;margin-bottom:16px}
+.hero h1{font-family:'DM Serif Display',serif;font-size:2.3rem;font-weight:400;line-height:1.15;margin-bottom:12px}
+.hero h1 em{font-style:italic;color:var(--red)}
+.hero p{font-size:.92rem;color:rgba(255,255,255,.65);line-height:1.7}
+.hero-meta{font-size:.75rem;color:rgba(255,255,255,.35);margin-top:10px;letter-spacing:.04em;padding-bottom:32px}
+.hero-meta span{color:rgba(255,255,255,.55)}
+
+/* TABS */
+.tab-bar{background:linear-gradient(135deg,#0d0e14 0%,#1a0a10 55%,#2e0d1a 100%);display:flex;padding:0 40px}
+.tab-btn{display:flex;align-items:center;gap:8px;padding:18px 36px;font-size:.88rem;font-weight:500;color:rgba(255,255,255,.45);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;transition:color .18s,border-color .18s;white-space:nowrap}
+.tab-btn .tab-num{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;transition:all .18s;flex-shrink:0}
+.tab-btn:hover{color:rgba(255,255,255,.75)}
+.tab-btn.active{color:#fff;border-bottom:3px solid var(--red);background:rgba(255,255,255,.06)}
+.tab-btn.active .tab-num{border-color:var(--red);background:rgba(200,16,46,.18);color:var(--red)}
+
+/* CONTENT */
+.content{max-width:1060px;margin:0 auto;padding:36px 24px 60px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* HEADINGS */
+.sec-head{margin-bottom:22px}
+.sec-head h2{font-family:'DM Serif Display',serif;font-size:1.45rem;font-weight:400;color:var(--n900);margin-bottom:4px}
+.sec-head p{font-size:.83rem;color:var(--n500);line-height:1.6}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);padding:24px 28px;margin-bottom:20px}
+.card-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0f0f0}
+.card-title .ct-icon{font-size:1.3rem}
+.card-title .ct-text strong{display:block;font-size:.95rem;font-weight:700;color:var(--n900)}
+.card-title .ct-text span{font-size:.76rem;color:var(--n500)}
+
+/* AUDIENCE TABLE */
+.aud-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.aud-table th{padding:10px 14px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--n500);background:var(--n100);border-bottom:2px solid var(--n300)}
+.aud-table th:not(:first-child){text-align:center}
+.aud-table td{padding:13px 14px;border-bottom:1px solid #f0f0f0;vertical-align:top;line-height:1.5}
+.aud-table td:not(:first-child){text-align:center;font-weight:700;font-size:.95rem;color:var(--n900)}
+.aud-table tr:last-child td{border-bottom:none}
+.seg-label{font-weight:700;color:var(--n900)}
+.seg-sub{font-size:.73rem;color:var(--n500);font-weight:400;margin-top:2px}
+.aud-table tr.total-row{background:var(--n100)}
+.aud-table tr.total-row td{font-weight:700}
+.aud-table tr.nonloyalty-row{background:#fff9f5}
+.aud-table tr.nonloyalty-row td:not(:first-child){color:var(--red)}
+
+/* FLOW */
+.flow-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0}
+.flow-box{background:var(--n100);border-radius:var(--r);padding:14px 18px;text-align:center;min-width:130px;flex:1}
+.flow-box.hl{background:var(--red-light);border:1.5px solid rgba(200,16,46,.22)}
+.fb-val{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--n900)}
+.flow-box.hl .fb-val{color:var(--red)}
+.fb-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--n500);margin-top:3px}
+.fb-sub{font-size:.71rem;color:var(--n500);margin-top:4px;line-height:1.4}
+.flow-arrow{font-size:1.4rem;color:var(--n300);flex-shrink:0}
+.flow-plus{font-size:1.1rem;font-weight:700;color:var(--red)}
+
+/* TRAFFIC */
+.traffic-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:16px 0}
+.traffic-box{background:var(--n100);border-radius:var(--r);padding:16px 18px}
+.traffic-box.imm{background:var(--red-light);border:1.5px solid rgba(200,16,46,.2)}
+.tb-icon{font-size:1.6rem;margin-bottom:6px}
+.tb-val{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--n900)}
+.traffic-box.imm .tb-val{color:var(--red)}
+.tb-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--n500);margin-top:3px}
+.tb-sub{font-size:.74rem;color:var(--n500);margin-top:6px;line-height:1.5}
+.traffic-arr{text-align:center}
+.arr-pct{font-size:.78rem;font-weight:700;color:var(--n500);margin-bottom:6px}
+.arr-icon{font-size:1.5rem;color:var(--n300)}
+
+/* INPUTS */
+.input-row{display:flex;align-items:flex-start;gap:16px;margin-bottom:12px}
+.input-row label{flex:1;font-size:.82rem;font-weight:600;color:var(--n700);padding-top:10px}
+.input-row label span{display:block;font-size:.72rem;font-weight:400;color:var(--n500);margin-top:3px;line-height:1.5}
+.inp-wrap{display:flex;align-items:center;background:var(--n100);border:1.5px solid var(--n300);border-radius:8px;overflow:hidden;flex-shrink:0}
+.inp-prefix{padding:0 10px;font-weight:700;color:var(--n500);font-size:.9rem;background:var(--n100);border-right:1px solid var(--n300);height:40px;display:flex;align-items:center}
+.inp-wrap input[type=number]{width:80px;height:40px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;color:var(--n900);padding:0 10px;outline:none;-moz-appearance:textfield}
+.inp-wrap input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.slider-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0;width:220px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:999px;background:linear-gradient(to right,var(--red) 0%,var(--red) var(--pct,50%),#ddd var(--pct,50%));cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.sv{min-width:40px;font-weight:700;font-size:.84rem;color:var(--red);text-align:right}
+input.sl-num{width:68px;height:40px;border:1.5px solid var(--n300);border-radius:8px;background:var(--n100);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:var(--n900);padding:0 8px;outline:none;-moz-appearance:textfield;flex-shrink:0}
+input.sl-num::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* METRICS */
+.metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+.metric-tile{background:var(--n100);border-radius:var(--r);padding:14px 12px;text-align:center}
+.metric-tile.hot{background:var(--red-light);border:1.5px solid rgba(200,16,46,.18)}
+.mt-val{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--n900)}
+.metric-tile.hot .mt-val{color:var(--red)}
+.mt-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--n500);margin-bottom:5px}
+
+/* SUMMARY TABLE */
+.sum-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.sum-table th{padding:9px 12px;text-align:left;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--n500);background:var(--n100);border-bottom:2px solid var(--n300)}
+.sum-table td{padding:11px 12px;border-bottom:1px solid #f0f0f0}
+.sum-table tr:last-child td{border-bottom:none;font-weight:700;background:var(--n900);color:#fff}
+.sum-table .num{text-align:right;font-weight:600}
+.sum-table .roi{text-align:right;font-weight:700;color:var(--red)}
+.sum-table tr:last-child .roi{color:var(--red)}
+
+/* TOTALS */
+.totals-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.total-tile{background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);padding:18px 16px;text-align:center}
+.total-tile.big{background:var(--red);color:#fff}
+.tt-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--n500);margin-bottom:8px}
+.total-tile.big .tt-label{color:rgba(255,255,255,.7)}
+.tt-val{font-family:'DM Serif Display',serif;font-size:1.75rem;color:var(--n900)}
+.total-tile.big .tt-val{color:#fff}
+
+/* PRICING */
+.invest-banner{background:var(--n900);color:#fff;border-radius:var(--r2);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.ib-label{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:4px}
+.ib-val{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--red)}
+.ib-sub{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px}
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.price-card{background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);padding:22px 24px;border-top:3px solid var(--red);display:flex;flex-direction:column}
+.price-card h3{font-size:.92rem;font-weight:700;color:var(--n900);margin-bottom:3px}
+.pc-sub{font-size:.76rem;color:var(--red);font-weight:600;margin-bottom:10px}
+.price-card p{font-size:.78rem;color:var(--n500);line-height:1.65;margin-bottom:12px}
+.feature-list{list-style:none;margin-bottom:16px;flex:1}
+.feature-list li{font-size:.78rem;color:var(--n700);padding:3px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.5}
+.price-tag{display:flex;align-items:baseline;gap:5px;margin-top:auto;padding-top:14px;border-top:1px solid #f0f0f0}
+.pt-mo{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--red)}
+.pt-label{font-size:.74rem;color:var(--n500)}
+.pt-yr{font-size:.74rem;color:var(--n500);margin-left:6px}
+
+.inv-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.inv-table th{padding:10px 14px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--n500);background:var(--n100);border-bottom:2px solid var(--n300)}
+.inv-table th:not(:first-child){text-align:right}
+.inv-table td{padding:13px 14px;border-bottom:1px solid #f0f0f0}
+.inv-table td:not(:first-child){text-align:right;font-weight:700}
+.inv-table tr.total-row td{background:var(--n900);color:#fff;font-weight:700;border-bottom:none}
+.inv-table tr.total-row td:not(:first-child){color:var(--red)}
+
+/* MISC */
+.insight{background:linear-gradient(135deg,#f5e6e9,#fff0f2);border:1.5px solid rgba(200,16,46,.18);border-radius:var(--r);padding:16px 18px;margin:16px 0;font-size:.81rem;color:var(--n700);line-height:1.65}
+.insight strong{color:var(--red)}
+.footnote{font-size:.71rem;color:var(--n500);line-height:1.7;padding:14px 16px;background:var(--n100);border-left:3px solid var(--n300);border-radius:0 8px 8px 0;margin-top:16px}
+footer{text-align:center;padding:16px 24px 32px;font-size:.72rem;color:var(--n500)}
+
+@media(max-width:720px){
+  header{padding:0 16px}.hero{padding:32px 16px 0}.tab-bar{padding:0 8px}
+  .tab-btn{padding:14px 16px;font-size:.8rem}.content{padding:24px 14px 48px}
+  .price-grid{grid-template-columns:1fr}.totals-bar{grid-template-columns:1fr 1fr}
+  .metric-row{grid-template-columns:1fr 1fr}.traffic-grid{grid-template-columns:1fr}
+  .flow-row{flex-direction:column;align-items:stretch}
+  .input-row{flex-direction:column;gap:8px}.slider-wrap{width:100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-left">
+    <div class="hd-logo">
+      <div class="hd-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm-1 5h2v6h-2V7zm0 8h2v2h-2v-2z"/></svg>
+      </div>
+      <div class="hd-logo-name">Semcasting <span>Analytics</span></div>
+    </div>
+    <div class="hd-divider"></div>
+    <div class="hd-pow">Powered by <strong>SEMCASTING</strong></div>
+  </div>
+  <div class="hd-badge">Pharmacy Intelligence</div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">🏥 Immunization Growth Tool</div>
+    <h1>Pharmacy <em>Immunization</em><br>ROI Calculator</h1>
+    <p>Quantify the size of the prize and revenue impact of customer-led orchestration across paid media, CRM, and in-store channels.</p>
+    <div class="hero-meta"><span>Identity</span> · <span>Orchestration</span> · <span>Measurement</span></div>
+  </div>
+</section>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab(1,this)">
+    <span class="tab-num">①</span>&nbsp; Incremental Reach
+  </button>
+  <button class="tab-btn" onclick="showTab(2,this)">
+    <span class="tab-num">②</span>&nbsp; Revenue ROI
+  </button>
+  <button class="tab-btn" onclick="showTab(3,this)">
+    <span class="tab-num">③</span>&nbsp; Pricing &amp; Services
+  </button>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════
+     TAB 1 — INCREMENTAL REACH
+═══════════════════════════════════════════ -->
+<div id="tab1" class="tab-pane active">
+
+  <div class="sec-head">
+    <h2>Identified Walk-in Customers to Pharmacy &amp; Competitive Pharmacies</h2>
+    <p>Semcasting Audience Measurement · 400-Day Dataset · 33,728,202 observed store visits · people counts</p>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="aud-table">
+      <thead>
+        <tr>
+          <th style="width:44%">Age Segment</th>
+          <th>💊 Pharmacy Visitors</th>
+          <th>🏪 Competitive Pharmacy Visitors</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="seg-label">👴 Senior / Age 65+</div><div class="seg-sub">Medicare-eligible · Part B covered · highest immunization priority</div></td>
+          <td>16.0M</td><td>13.2M</td>
+        </tr>
+        <tr>
+          <td><div class="seg-label">🧑 Under Age 65</div><div class="seg-sub">Adults under 65 · employer / family / out-of-pocket coverage</div></td>
+          <td>36.8M</td><td>30.8M</td>
+        </tr>
+        <tr>
+          <td><div class="seg-label">👶 Households with Kids</div><div class="seg-sub">Family immunization decisions · flu + pediatric vaccines</div></td>
+          <td>26.4M</td><td>22.3M</td>
+        </tr>
+        <tr class="total-row">
+          <td><div class="seg-label">Adult Total</div><div class="seg-sub">65+ plus Under 65 · Kids HH excluded to avoid overlap</div></td>
+          <td>52.8M<br><small style="font-weight:400;color:var(--n500)">16.0M + 36.8M</small></td>
+          <td>44.0M<br><small style="font-weight:400;color:var(--n500)">13.2M + 30.8M</small></td>
+        </tr>
+        <tr class="nonloyalty-row">
+          <td><div class="seg-label">Est. Non-Loyalty Customers</div><div class="seg-sub">Store visitors skew toward loyalty members — est. 65% are loyalty, 35% non-loyalty · Competitive visitors: 60% (national avg)</div></td>
+          <td>18.5M<br><small style="font-weight:400;color:var(--n500)">52.8M × 35% non-loyalty</small></td>
+          <td>26.4M<br><small style="font-weight:400;color:var(--n500)">44.0M × 60% non-loyalty</small></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:12px 16px;font-size:.71rem;color:var(--n500);background:var(--n100);border-top:1px solid #eee">
+      Source: Semcasting footfall measurement · 33,728,202 observed store visits over 400 days · Competitive store visitors identified via pharmacy footfall intelligence. Loyalty status unresolved across all segments.
+    </div>
+  </div>
+
+  <div class="sec-head" style="margin-top:32px">
+    <h2>Increased Match Rates from CRM to Epsilon</h2>
+  </div>
+  <div class="card">
+    <div class="flow-row">
+      <div class="flow-box">
+        <div class="fb-val">100M</div>
+        <div class="fb-label">Total CRM Members</div>
+        <div class="fb-sub">Source: public disclosure</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <div class="fb-val">70M</div>
+        <div class="fb-label">Digitally Reachable Today</div>
+        <div class="fb-sub">Est. ~70% match rate per industry benchmarks · −30M unmatched</div>
+      </div>
+      <div class="flow-plus">&nbsp;+&nbsp;</div>
+      <div class="flow-box hl">
+        <div class="fb-val">+15M</div>
+        <div class="fb-label">+ Semcasting Identity Layer</div>
+        <div class="fb-sub">+15M incremental matches unlocked</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hl">
+        <div class="fb-val">85M</div>
+        <div class="fb-label">Total Reachable</div>
+        <div class="fb-sub">After Semcasting identity enrichment</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:24px;font-size:.77rem;color:var(--n500)">
+      <span>Total CRM base: <strong style="color:var(--n700)">100M</strong></span>
+      <span>Reachable today: <strong style="color:var(--n700)">70M</strong></span>
+      <span>Incremental via Semcasting: <strong style="color:var(--red)">+15M</strong></span>
+    </div>
+  </div>
+
+  <div class="sec-head" style="margin-top:32px">
+    <h2>Pharmacy.com — Site Traffic to Immunization Page</h2>
+    <p>Source: SimilarWeb / Semrush public estimates · immunization page estimate based on 3–5% of total site traffic</p>
+  </div>
+  <div class="card">
+    <div class="traffic-grid">
+      <div class="traffic-box">
+        <div class="tb-icon">🌐</div>
+        <div class="tb-val">55M–80M</div>
+        <div class="tb-label">Total Site Visits / month</div>
+        <div class="tb-sub">Peak: Nov 2024 ~80M · Off-peak avg ~55M<br>SimilarWeb / Semrush public estimates</div>
+      </div>
+      <div class="traffic-arr">
+        <div class="arr-pct">3–5% navigate<br>to immunization</div>
+        <div class="arr-icon">→</div>
+      </div>
+      <div class="traffic-box imm">
+        <div class="tb-icon">💉</div>
+        <div class="tb-val">1.5M–4M</div>
+        <div class="tb-label">Immunization Page / month</div>
+        <div class="tb-sub">Est. 3–5% of site traffic per SimilarWeb benchmarks</div>
+      </div>
+    </div>
+    <div class="insight">
+      <strong>Key insight:</strong> Between 1.5M and 4M people visit pharmacy immunization pages each month — expressing clear intent. Over a 6-month flight, that represents <strong>9M–12M people</strong>. Semcasting can identity-resolve these visitors and connect them to a household record, enabling coordinated follow-up across paid, email, and owned channels.
+    </div>
+  </div>
+
+  <div class="footnote">
+    † 38M immunizations administered in the 2024–25 season (Pharmacy Times, Jan 2026) · 56.1M Medicare beneficiaries: CMS 2026 · 85% match rate: Semcasting non-cookie identity resolution benchmark · Current cookie-based match rate industry benchmark: ~70% · Competitor pharmacy visitors and non-loyalty store visitors identified via Semcasting footfall intelligence and household-level device resolution.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 2 — REVENUE ROI
+═══════════════════════════════════════════ -->
+<div id="tab2" class="tab-pane">
+
+  <div class="sec-head">
+    <h2>Revenue ROI — Incremental Impact of Semcasting</h2>
+    <p>Estimated revenue return from the three audience opportunities identified in Tab 1, against an annual Semcasting investment</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="ct-icon">💰</span>
+      <div class="ct-text"><strong>Revenue Assumptions</strong></div>
+    </div>
+    <div class="input-row">
+      <label>Avg Revenue per Immunization†
+        <span>† CMS Medicare Part B flu vaccine payment range: $10.93–$83.49. Default $60 reflects blended average across Medicare and commercial payers.</span>
+      </label>
+      <div class="inp-wrap"><span class="inp-prefix">$</span><input type="number" id="rev-per-imm" value="60" min="1" oninput="calcAll()"/></div>
+    </div>
+    <div class="input-row">
+      <label>Retail Basket Attachment Rate</label>
+      <div class="slider-wrap">
+        <input type="range" id="basket-sl" min="0" max="100" value="25" oninput="syncSl(this,'basket-in','basket-sv')"/>
+        <span class="sv" id="basket-sv">25%</span>
+      </div>
+      <input type="number" id="basket-in" value="25" min="0" max="100" class="sl-num" oninput="syncIn(this,'basket-sl','basket-sv')"/>
+    </div>
+    <div class="input-row">
+      <label>Avg Retail Basket Value</label>
+      <div class="inp-wrap"><span class="inp-prefix">$</span><input type="number" id="basket-val" value="20" min="1" oninput="calcAll()"/></div>
+    </div>
+  </div>
+
+  <!-- Segment 1 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="ct-icon">🚶</span>
+      <div class="ct-text">
+        <strong>1. Identified Walk-in Customers</strong>
+        <span>18.5M non-loyalty + 26.4M competitive = 44.9M identified</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="flow-box"><div class="fb-val">18.5M</div><div class="fb-label">Non-Loyalty Audience</div></div>
+      <div class="flow-box"><div class="fb-val">26.5M</div><div class="fb-label">Competitive Pharmacy Audience</div></div>
+    </div>
+    <div class="input-row">
+      <label>Immunization Conversion Rate
+        <span>Conservative: 0.1% of identified walk-in visitors convert to an immunization through paid media activation. Industry flu campaign benchmarks: 0.05–0.2%.</span>
+      </label>
+      <div class="slider-wrap">
+        <input type="range" id="conv1-sl" min="0.01" max="1" step="0.01" value="0.05" oninput="syncSl(this,'conv1-in','conv1-sv',true)"/>
+        <span class="sv" id="conv1-sv">0.05%</span>
+      </div>
+      <input type="number" id="conv1-in" value="0.05" min="0.01" max="1" step="0.01" class="sl-num" oninput="syncIn(this,'conv1-sl','conv1-sv',true)"/>
+    </div>
+    <div class="metric-row">
+      <div class="metric-tile"><div class="mt-label">Incr. Immunizations</div><div class="mt-val" id="s1-imm">23K</div></div>
+      <div class="metric-tile"><div class="mt-label">Pharmacy Revenue</div><div class="mt-val" id="s1-pharma">$1.4M</div></div>
+      <div class="metric-tile hot"><div class="mt-label">Total incl. Retail Basket</div><div class="mt-val" id="s1-total">$1.5M</div></div>
+    </div>
+  </div>
+
+  <!-- Segment 2 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="ct-icon">🔗</span>
+      <div class="ct-text">
+        <strong>2. Increased Match Rates — CRM to Epsilon</strong>
+        <span>+15M loyalty members now digitally reachable · Digital Activity Score included</span>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--n500);line-height:1.65;margin-bottom:14px">
+      Semcasting adds identity data (MAIDs, email addresses, Blockgraph IDs, iHeart IDs) to improve match rates from CRM to Epsilon — unlocking 15M additional loyalty members invisible to current activation.<br><br>
+      <strong style="color:var(--n700)">Also Included: Digital Activity Score (DMEI)</strong><br>
+      Scores each loyalty member 1–11 for online activity. Enables the media agency to prioritize digital channels for high-activity members and route low-activity seniors to direct mail or IVR — reducing waste and improving conversion across the newly matched audience.
+    </p>
+    <div class="input-row">
+      <label>Incremental Matched Audience</label>
+      <div class="inp-wrap"><input type="number" id="match-aud" value="15000000" min="1" oninput="calcAll()"/></div>
+    </div>
+    <div class="input-row">
+      <label>Immunization Conversion Rate
+        <span>Conservative: 0.2% of newly reachable loyalty members convert via paid media. Known customers have higher propensity than cold audiences.</span>
+      </label>
+      <div class="slider-wrap">
+        <input type="range" id="conv2-sl" min="0.01" max="1" step="0.01" value="0.10" oninput="syncSl(this,'conv2-in','conv2-sv',true)"/>
+        <span class="sv" id="conv2-sv">0.10%</span>
+      </div>
+      <input type="number" id="conv2-in" value="0.10" min="0.01" max="1" step="0.01" class="sl-num" oninput="syncIn(this,'conv2-sl','conv2-sv',true)"/>
+    </div>
+    <div class="metric-row">
+      <div class="metric-tile"><div class="mt-label">Incr. Immunizations</div><div class="mt-val" id="s2-imm">15K</div></div>
+      <div class="metric-tile"><div class="mt-label">Pharmacy Revenue</div><div class="mt-val" id="s2-pharma">$900K</div></div>
+      <div class="metric-tile hot"><div class="mt-label">Total incl. Retail Basket</div><div class="mt-val" id="s2-total">$975K</div></div>
+    </div>
+  </div>
+
+  <!-- Segment 3 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="ct-icon">💉</span>
+      <div class="ct-text">
+        <strong>3. Immunization Page Visitors</strong>
+        <span>9M–12M high-intent visitors per 6-month flight</span>
+      </div>
+    </div>
+    <div class="input-row">
+      <label>Identified Page Visitors (6-month flight)
+        <span>Conservative end of the 9M–12M range.</span>
+      </label>
+      <div class="inp-wrap"><input type="number" id="page-vis" value="9000000" min="1" oninput="calcAll()"/></div>
+    </div>
+    <div class="input-row">
+      <label>Retargeting Conversion Rate
+        <span>% of identified page visitors who subsequently schedule and complete an immunization. Conservative: 0.3% — highest intent of the three segments (already visited the scheduling page), retargeted via paid media.</span>
+      </label>
+      <div class="slider-wrap">
+        <input type="range" id="conv3-sl" min="0.01" max="2" step="0.01" value="0.30" oninput="syncSl(this,'conv3-in','conv3-sv',true)"/>
+        <span class="sv" id="conv3-sv">0.30%</span>
+      </div>
+      <input type="number" id="conv3-in" value="0.30" min="0.01" max="2" step="0.01" class="sl-num" oninput="syncIn(this,'conv3-sl','conv3-sv',true)"/>
+    </div>
+    <div class="metric-row">
+      <div class="metric-tile"><div class="mt-label">Incr. Immunizations</div><div class="mt-val" id="s3-imm">27K</div></div>
+      <div class="metric-tile"><div class="mt-label">Pharmacy Revenue</div><div class="mt-val" id="s3-pharma">$1.6M</div></div>
+      <div class="metric-tile hot"><div class="mt-label">Total incl. Retail Basket</div><div class="mt-val" id="s3-total">$1.8M</div></div>
+    </div>
+  </div>
+
+  <!-- Totals -->
+  <div class="sec-head" style="margin-top:8px"><h2>Total Incremental Impact</h2></div>
+  <div class="totals-bar">
+    <div class="total-tile"><div class="tt-label">Total Immunizations</div><div class="tt-val" id="tot-imm">65K</div></div>
+    <div class="total-tile"><div class="tt-label">Total Revenue incl. Retail Basket</div><div class="tt-val" id="tot-rev">$4.2M</div></div>
+    <div class="total-tile"><div class="tt-label">Semcasting Annual Investment</div><div class="tt-val">TBD</div></div>
+    <div class="total-tile big"><div class="tt-label">Estimated ROI</div><div class="tt-val" id="tot-roi">1,789%</div></div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th>Driver</th>
+          <th style="text-align:right">Immunizations</th>
+          <th style="text-align:right">Pharmacy Revenue</th>
+          <th style="text-align:right">Retail Basket</th>
+          <th style="text-align:right">Total Incr. Revenue</th>
+          <th style="text-align:right">ROI vs Investment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🚶 Walk-in Customers</td>
+          <td class="num" id="st-s1-imm">23K</td><td class="num" id="st-s1-ph">$1.4M</td>
+          <td class="num" id="st-s1-bk">$113K</td><td class="num" id="st-s1-tot">$1.5M</td>
+          <td class="roi" id="st-s1-roi">559%</td>
+        </tr>
+        <tr>
+          <td>🔗 Identity Match Lift</td>
+          <td class="num" id="st-s2-imm">15K</td><td class="num" id="st-s2-ph">$900K</td>
+          <td class="num" id="st-s2-bk">$75K</td><td class="num" id="st-s2-tot">$975K</td>
+          <td class="roi" id="st-s2-roi">339%</td>
+        </tr>
+        <tr>
+          <td>💉 Immunization Page Visitors</td>
+          <td class="num" id="st-s3-imm">27K</td><td class="num" id="st-s3-ph">$1.6M</td>
+          <td class="num" id="st-s3-bk">$135K</td><td class="num" id="st-s3-tot">$1.8M</td>
+          <td class="roi" id="st-s3-roi">691%</td>
+        </tr>
+        <tr class="total-row">
+          <td>Total</td>
+          <td class="num" id="st-tot-imm">65K</td><td class="num" id="st-tot-ph">$3.9M</td>
+          <td class="num" id="st-tot-bk">$323K</td><td class="num" id="st-tot-tot">$4.2M</td>
+          <td class="roi" id="st-tot-roi">1,789%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footnote" style="border-left:none;border-radius:0;border-top:1px solid #eee">
+      † Revenue includes pharmacy reimbursement plus estimated retail basket attachment. Conversion rates are conservative estimates — actual data would sharpen these projections. All figures are incremental to today's baseline.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 3 — PRICING & SERVICES
+═══════════════════════════════════════════ -->
+<div id="tab3" class="tab-pane">
+
+  <div class="invest-banner">
+    <div>
+      <div class="ib-label">Total Investment</div>
+      <div class="ib-val">TBD</div>
+      <div class="ib-sub">Annual Semcasting investment · all 4 services</div>
+    </div>
+    <div style="text-align:right">
+      <div class="ib-label">FY27 — Pricing &amp; Services</div>
+      <div style="font-size:.82rem;color:rgba(255,255,255,.45);margin-top:6px">Four service lines that expand reachable audience<br>and improve media coordination</div>
+    </div>
+  </div>
+
+  <div class="price-grid">
+    <div class="price-card">
+      <h3>🔗 1. More Identity Data to Match to Epsilon</h3>
+      <div class="pc-sub">+15M incremental records matched</div>
+      <p>Identifiers and data elements added for improved match rates and targeting from CRM to Epsilon. Unlocks 15 million additional loyalty members who are in the CRM but currently invisible to paid media activation.</p>
+      <ul class="feature-list">
+        <li>📱 MAIDs (Mobile Ad IDs)</li>
+        <li>✉️ Email Addresses</li>
+        <li>📺 Blockgraph IDs (Linear TV)</li>
+        <li>🎵 iHeart Media IDs (Audio)</li>
+        <li>👴 Age Brackets (65+ etc.)</li>
+        <li>📊 Digital Activity Score (DMEI)</li>
+        <li>🏥 ACA Members</li>
+      </ul>
+      <div class="price-tag">
+        <span class="pt-mo">TBD</span><span class="pt-label">/ month</span>
+      </div>
+    </div>
+
+    <div class="price-card">
+      <h3>🏪 2a. Walk-in Traffic — Own Locations</h3>
+      <div class="pc-sub">+18M non-loyalty customers identified</div>
+      <p>Identifies store visitors who are not in the loyalty program — people already choosing this pharmacy for pharmacy or retail but outside the CRM universe.</p>
+      <ul class="feature-list">
+        <li>🚶 Non-loyalty store visitors</li>
+        <li>🔍 Loyalty vs. non-loyalty cross-reference</li>
+        <li>👴 Age range segmentation (65+)</li>
+        <li>🏥 Medicare eligibility overlay</li>
+      </ul>
+      <div class="price-tag">
+        <span class="pt-mo">TBD</span><span class="pt-label">/ month</span>
+      </div>
+    </div>
+
+    <div class="price-card">
+      <h3>🏬 2b. Competitive Pharmacy Traffic</h3>
+      <div class="pc-sub">Conquest audience — pharmacy-active, not yet customers</div>
+      <p>Identifies visitors to competitive pharmacy locations — CVS, Walmart pharmacy, and grocery pharmacy — who are not current customers.</p>
+      <ul class="feature-list">
+        <li>🏪 CVS, Walmart &amp; grocery pharmacy visitors</li>
+        <li>🔍 Non-customer filter</li>
+        <li>👴 Age range segmentation (65+)</li>
+        <li>📊 Digital activity scoring</li>
+      </ul>
+      <div class="price-tag">
+        <span class="pt-mo">TBD</span><span class="pt-label">/ month</span>
+      </div>
+    </div>
+
+    <div class="price-card">
+      <h3>💉 3. Immunization Page Visitor Identification</h3>
+      <div class="pc-sub">9M–12M high-intent visitors identified per 6-month flight</div>
+      <p>Identifies visitors to immunization scheduling pages — including partial completions. No pixel or tag required. Cookie-free identification resolves anonymous visitors to household records.</p>
+      <ul class="feature-list">
+        <li>🌐 Immunization page visitors (1.5M–4M/mo)</li>
+        <li>⚠️ Partial scheduling completions</li>
+        <li>🚫 No pixel or tag required</li>
+        <li>🏠 Resolved to household record</li>
+      </ul>
+      <div class="price-tag">
+        <span class="pt-mo">TBD</span><span class="pt-label">/ month</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><h2>Investment Summary</h2></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="inv-table">
+      <thead>
+        <tr><th>Service</th><th>Monthly</th><th>Annual</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🔗 1. More Identity Data (+15M to Epsilon)</td><td>TBD</td><td>TBD</td></tr>
+        <tr><td>🏪 2a. Walk-in Traffic (+18M non-loyalty)</td><td>TBD</td><td>TBD</td></tr>
+        <tr><td>🏬 2b. Competitive Pharmacy Traffic</td><td>TBD</td><td>TBD</td></tr>
+        <tr><td>💉 3. Immunization Page Visitor ID</td><td>TBD</td><td>TBD</td></tr>
+        <tr class="total-row"><td>Total — All 4 Services</td><td>TBD</td><td>TBD</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</div><!-- /content -->
+
+<footer>&copy; 2025 Semcasting, Inc. &nbsp;|&nbsp; Proprietary &amp; Confidential &nbsp;|&nbsp; Immunization ROI Modeling Tool &nbsp;|&nbsp; For internal planning use only.</footer>
+
+<script>
+function showTab(n,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+n).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setPct(sl){
+  const pct=((sl.value-sl.min)/(sl.max-sl.min)*100)+'%';
+  sl.style.setProperty('--pct',pct);
+}
+
+function syncSl(sl,inId,svId,isPct){
+  document.getElementById(inId).value=sl.value;
+  document.getElementById(svId).textContent=sl.value+(isPct?'%':'');
+  setPct(sl); calcAll();
+}
+function syncIn(inp,slId,svId,isPct){
+  const sl=document.getElementById(slId);
+  sl.value=inp.value;
+  document.getElementById(svId).textContent=inp.value+(isPct?'%':'');
+  setPct(sl); calcAll();
+}
+
+function fmtM(n){
+  if(n>=1e6) return '$'+(n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return '$'+Math.round(n/1e3)+'K';
+  return '$'+Math.round(n).toLocaleString();
+}
+function fmtI(n){
+  if(n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return Math.round(n/1e3)+'K';
+  return Math.round(n).toLocaleString();
+}
+function fmtPct(rev,cost){return Math.round((rev-cost)/cost*100).toLocaleString()+'%';}
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+function calcAll(){
+  const rev=+document.getElementById('rev-per-imm').value||60;
+  const bRate=(+document.getElementById('basket-in').value||25)/100;
+  const bVal=+document.getElementById('basket-val').value||20;
+  const cost=222000;
+
+  // Seg 1: 44.9M
+  const imm1=Math.round(44900000*(+document.getElementById('conv1-in').value||0.05)/100);
+  const ph1=imm1*rev, bk1=imm1*bRate*bVal, tot1=ph1+bk1;
+
+  // Seg 2
+  const imm2=Math.round((+document.getElementById('match-aud').value||15000000)*(+document.getElementById('conv2-in').value||0.10)/100);
+  const ph2=imm2*rev, bk2=imm2*bRate*bVal, tot2=ph2+bk2;
+
+  // Seg 3
+  const imm3=Math.round((+document.getElementById('page-vis').value||9000000)*(+document.getElementById('conv3-in').value||0.30)/100);
+  const ph3=imm3*rev, bk3=imm3*bRate*bVal, tot3=ph3+bk3;
+
+  const immA=imm1+imm2+imm3,phA=ph1+ph2+ph3,bkA=bk1+bk2+bk3,totA=tot1+tot2+tot3;
+  const roi=Math.round((totA-cost)/cost*100);
+
+  set('s1-imm',fmtI(imm1));set('s1-pharma',fmtM(ph1));set('s1-total',fmtM(tot1));
+  set('s2-imm',fmtI(imm2));set('s2-pharma',fmtM(ph2));set('s2-total',fmtM(tot2));
+  set('s3-imm',fmtI(imm3));set('s3-pharma',fmtM(ph3));set('s3-total',fmtM(tot3));
+  set('tot-imm',fmtI(immA));set('tot-rev',fmtM(totA));set('tot-roi','Strong ROI');
+
+  set('st-s1-imm',fmtI(imm1));set('st-s1-ph',fmtM(ph1));set('st-s1-bk',fmtM(bk1));set('st-s1-tot',fmtM(tot1));set('st-s1-roi','—');
+  set('st-s2-imm',fmtI(imm2));set('st-s2-ph',fmtM(ph2));set('st-s2-bk',fmtM(bk2));set('st-s2-tot',fmtM(tot2));set('st-s2-roi','—');
+  set('st-s3-imm',fmtI(imm3));set('st-s3-ph',fmtM(ph3));set('st-s3-bk',fmtM(bk3));set('st-s3-tot',fmtM(tot3));set('st-s3-roi','—');
+  set('st-tot-imm',fmtI(immA));set('st-tot-ph',fmtM(phA));set('st-tot-bk',fmtM(bkA));set('st-tot-tot',fmtM(totA));set('st-tot-roi','TBD');
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('input[type=range]').forEach(setPct);
+  calcAll();
+});
+</script>
+</body>
+</html>
